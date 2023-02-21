@@ -40,6 +40,7 @@ const ListActionStyled = styled.div`
     font-weight: 400;
     text-align: left;
     padding: 10px 0 10px 20px;
+    color: #42526e;
   }
 
   .action-item:hover {

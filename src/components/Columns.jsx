@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import Card from "./Card";
+import TitleEditable from "./TitleEditable";
 
-import { Container, Draggable } from "react-smooth-dnd";
 import MoreBtn from "./MoreBtn";
+import AddCardField from "./AddCardField";
 
 const ColumnsStyled = styled.div`
   flex: 0 0 auto;
@@ -38,6 +39,8 @@ const ColumnsStyled = styled.div`
   .card-ghost {
     transition: transform 0.18s ease;
     transform: rotateZ(5deg);
+    font-weight: 400;
+    color: #223555;
   }
 
   .card-ghost-drop {
@@ -53,12 +56,6 @@ const ColumnHeadingStyled = styled.div`
   padding: 10px 6px;
   align-items: center;
   cursor: pointer;
-
-  .column-title {
-    font-size: 14px;
-    color: #223555;
-    font-weight: 600;
-  }
 `;
 
 const ColumnFooterStyled = styled.div`
@@ -81,61 +78,86 @@ const ColumnFooterStyled = styled.div`
 `;
 
 const Columns = (props) => {
+  const { column, onDragStart, onDragEnter, onDragEnd } = props;
+
   const [cards, setCards] = useState([]);
 
-  const { column } = props;
+  const [displayAddCard, setDisplayAddCard] = useState(false);
+  const handleToggleDisplay = () => setDisplayAddCard(!displayAddCard);
+  const handleClose = () => setDisplayAddCard(false);
+
+  // Drag n Drop
+  const dragCard = useRef(null);
+  const dragOverCard = useRef(null);
+  const [columnStart, setColumnStart] = useState("");
+  const [columnEnd, setColumnEnd] = useState("");
 
   useEffect(() => {
     if (column) {
-      const cardOrder = column.cardOrder;
-
       column.cards.sort((a, b) => {
-        return cardOrder.indexOf(a.id) - cardOrder.indexOf(b.id);
+        return column.cardOrder.indexOf(a.id) - column.cardOrder.indexOf(b.id);
       });
 
       setCards(column.cards);
     }
-  }, []);
+  }, [column]);
 
-  const onCardDrop = (dropResult) => {
-    console.log(dropResult);
+  // Xử lý Drag n Drop
+  const dragCardStart = (e, position, columnId) => {
+    dragCard.current = position;
+    setColumnStart(columnId);
+    console.log(columnStart);
+  };
+
+  const dragCardEnter = (e, position, columnId) => {
+    dragOverCard.current = position;
+    setColumnEnd(columnId);
+    console.log(columnEnd);
+  };
+
+  const dropCard = () => {
+    console.log("start", columnStart);
+    console.log("end", columnEnd);
+
+    console.log("index", dragCard.current);
+    console.log("indexBehind", dragOverCard.current);
   };
 
   return (
     <>
       <ColumnsStyled>
-        <ColumnHeadingStyled className="column-drag-handle">
-          <div className="column-title ">{column.title}</div>
+        <ColumnHeadingStyled
+          draggable="true"
+          onDragStart={onDragStart}
+          onDragEnter={onDragEnter}
+          onDragEnd={onDragEnd}
+        >
+          <TitleEditable title={column.title} />
           <MoreBtn />
         </ColumnHeadingStyled>
         <div className="list-task">
-          <Container
-            groupName="col"
-            onDrop={onCardDrop}
-            getChildPayload={(index) => console.log(cards[index])}
-            dragClass="card-ghost"
-            dropClass="card-ghost-drop"
-            dropPlaceholder={{
-              animationDuration: 150,
-              showOnTop: true,
-              className: "drop-preview",
-            }}
-            dropPlaceholderAnimationDuration={100}
-          >
-            {cards.map((card, index) => (
-              <Draggable key={index}>
-                <Card title={card.title} />
-              </Draggable>
-            ))}
-          </Container>
+          {cards.map((card, index) => (
+            <Card
+              title={card.title}
+              key={index}
+              columnId={column.id}
+              onDragStart={(e) => dragCardStart(e, index, card.columnId)}
+              onDragEnter={(e) => dragCardEnter(e, index, card.columnId)}
+              onDragEnd={dropCard}
+            />
+          ))}
+
+          {displayAddCard && <AddCardField handleClose={handleClose} />}
         </div>
 
-        <ColumnFooterStyled>
-          <div className="add-task">
-            {" "}
-            <i className="fa-solid fa-plus"></i> Add a card
-          </div>
-        </ColumnFooterStyled>
+        {displayAddCard || (
+          <ColumnFooterStyled onClick={handleToggleDisplay}>
+            <div className="add-task">
+              {" "}
+              <i className="fa-solid fa-plus"></i> Add a card
+            </div>
+          </ColumnFooterStyled>
+        )}
       </ColumnsStyled>
     </>
   );

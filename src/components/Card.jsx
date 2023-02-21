@@ -11,6 +11,7 @@ const CardStyled = styled.div`
   font-weight: 400;
   color: #6b778c;
   margin-bottom: 8px;
+  cursor: pointer;
 
   &:hover {
     cursor: pointer;
@@ -42,10 +43,22 @@ const CardStyled = styled.div`
   }
 `;
 
-const Card = ({ title }) => {
+const Card = ({
+  title,
+  columnId,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
+  onDragLeave,
+}) => {
   return (
-    <CardStyled>
-      {title}
+    <CardStyled
+      draggable="true"
+      onDragStart={onDragStart}
+      onDragEnter={onDragEnter}
+      onDragEnd={onDragEnd}
+    >
+      {title} && {columnId}
       <div className="edit-btn">
         <i className="fa-solid fa-pencil"></i>
       </div>

@@ -9,8 +9,7 @@ const AddColumnStyled = styled.div`
   font-size: 14px;
   font-weight: 400;
   flex-shrink: 0;
-  margin-left: 5px;
-  box-shadow: rgb(27 27 27 / 16%) -1px 20px 20px 0px;
+  xbox-shadow: rgb(27 27 27 / 16%) -1px 20px 20px 0px;
   border-radius: 3px;
   transition: all ease 0.2s;
 
@@ -20,12 +19,12 @@ const AddColumnStyled = styled.div`
   }
 `;
 
-const AddColumn = () => {
+const AddToggleCol = ({ handleToggleAddColumn }) => {
   return (
-    <AddColumnStyled>
+    <AddColumnStyled onClick={handleToggleAddColumn}>
       <i className="fa-solid fa-plus"></i> Add another list
     </AddColumnStyled>
   );
 };
 
-export default AddColumn;
+export default AddToggleCol;

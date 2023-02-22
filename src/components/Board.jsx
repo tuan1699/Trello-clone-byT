@@ -3,6 +3,8 @@ import styled from "styled-components";
 
 import { initData } from "../actions/initData";
 
+import { fetchBoard, createNewColumn } from "../actions/callApi";
+
 // import component
 import Columns from "./Columns";
 import AddToggleCol from "./AddToggleCol";
@@ -56,7 +58,9 @@ const BoardBg = styled.div`
 `;
 
 const Board = () => {
+  const boardId = "63f5926aebd6fc01fc46e1b8";
   const [columns, setColumns] = useState([]);
+  const [board, setBoard] = useState({});
 
   // Drop n Drag Column
   const dragItem = useRef();
@@ -64,17 +68,20 @@ const Board = () => {
 
   // Lấy data
   useEffect(() => {
-    if (initData) {
-      const columnsDb = initData.columns;
+    fetchBoard(boardId).then((board) => {
+      const columnsDb = board.columns;
 
       columnsDb.sort((a, b) => {
         return (
-          initData.columnsOrder.indexOf(a.id) -
-          initData.columnsOrder.indexOf(b.id)
+          board.columnOrder.indexOf(a._id) - board.columnOrder.indexOf(b._id)
         );
       });
 
+      setBoard(board);
       setColumns(columnsDb);
+    });
+
+    if (initData) {
     }
   }, []);
 
@@ -94,21 +101,20 @@ const Board = () => {
 
     if (
       (dragItem.current === 0 &&
-        dragOverItem.current === initData.columnsOrder.length - 1) ||
-      (dragItem.current === initData.columnsOrder.length - 1 &&
+        dragOverItem.current === board.columnOrder.length - 1) ||
+      (dragItem.current === board.columnOrder.length - 1 &&
         dragOverItem.current === 0)
     ) {
-      initData.columnsOrder.splice(dragItem.current, 1, dragOverColumn.id);
-      initData.columnsOrder.splice(dragOverItem.current, 1, dragColumn.id);
+      board.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
+      board.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
     } else {
-      initData.columnsOrder.splice(dragItem.current, 1, dragOverColumn.id);
-      initData.columnsOrder.splice(dragOverItem.current, 1, dragColumn.id);
+      board.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
+      board.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
     }
 
     copyColums.sort((a, b) => {
       return (
-        initData.columnsOrder.indexOf(a.id) -
-        initData.columnsOrder.indexOf(b.id)
+        board.columnOrder.indexOf(a._id) - board.columnOrder.indexOf(b._id)
       );
     });
 

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-
 import AddToggleCol from "./AddToggleCol";
 
 const AddFieldStyled = styled.div`
@@ -54,13 +53,23 @@ const AddFieldStyled = styled.div`
   }
 `;
 
-const AddField = () => {
+const AddField = ({ newTitle, onChange, handleAddColumn, addTitleRef }) => {
   const [openAddField, setOpenAddField] = useState(false);
+  const [inputAddColumn, setInputAddColumn] = useState("");
+
+  const handleInputChange = (e) => {
+    setInputAddColumn(e.target.value);
+  };
 
   // Đóng mở add Column
-
   const handleToggleAddColumn = () => setOpenAddField(!openAddField);
   const handleClose = () => setOpenAddField(false);
+
+  const handleAdd = () => {
+    const newTitle = addTitleRef.current.value;
+    handleAddColumn(newTitle);
+    setInputAddColumn("");
+  };
 
   return (
     <>
@@ -70,10 +79,15 @@ const AddField = () => {
             type="text"
             placeholder="Enter list title..."
             className="input-editable"
+            value={inputAddColumn}
+            onChange={handleInputChange}
             autoFocus
+            ref={addTitleRef}
           />
           <div className="feature">
-            <button className="add-btn">Add list</button>
+            <button className="add-btn" onClick={handleAdd}>
+              Add list
+            </button>
             <i
               className="fa-solid fa-xmark close-btn"
               onClick={handleClose}

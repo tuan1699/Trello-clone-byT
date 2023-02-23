@@ -59,20 +59,38 @@ const AddCardFieldStyled = styled.div`
   }
 `;
 
-const AddCardField = ({ handleClose }) => {
+const AddCardField = ({
+  handleClose,
+  onChange,
+  cardTitle,
+  onClick,
+  cardRefInput,
+  columnId,
+}) => {
   return (
     <>
       <AddCardFieldStyled>
         <textarea
+          id="input-card"
           type="text"
           placeholder="Enter list title..."
           className="area-editable"
           cols="10"
           rows="5"
           autoFocus
+          onChange={onChange}
+          value={cardTitle}
+          ref={cardRefInput}
+          data-idcolumn={columnId}
         />
         <div className="feature">
-          <button className="add-btn">Add list</button>
+          <button
+            className="add-btn"
+            onClick={onClick}
+            data-idcolumn={columnId}
+          >
+            Add card
+          </button>
           <i className="fa-solid fa-xmark close-btn" onClick={handleClose}></i>
         </div>
       </AddCardFieldStyled>

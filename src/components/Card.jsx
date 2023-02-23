@@ -58,7 +58,7 @@ const Card = ({
       onDragEnter={onDragEnter}
       onDragEnd={onDragEnd}
     >
-      {title} && {columnId}
+      {title}
       <div className="edit-btn">
         <i className="fa-solid fa-pencil"></i>
       </div>

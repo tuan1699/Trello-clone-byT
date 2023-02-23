@@ -48,14 +48,17 @@ const ListActionStyled = styled.div`
   }
 `;
 
-const MoreBtn = () => {
+const MoreBtn = ({ columnId }) => {
   const [displayAction, setDisplayAction] = useState(false);
 
-  const handleDisplayAction = () => {
+  const handleDisplayAction = (e) => {
     setDisplayAction(!displayAction);
 
     window.addEventListener("click", (e) => {
-      if (!e.target.matches(".more-btn") && !e.target.matches(".action-item")) {
+      if (
+        e.target.dataset.columnid !== columnId &&
+        !e.target.matches(".action-item")
+      ) {
         setDisplayAction(false);
       }
     });
@@ -68,12 +71,16 @@ const MoreBtn = () => {
 
   return (
     <MoreBtnStyled>
-      <div className="more-btn" onClick={() => handleDisplayAction()}>
+      <div
+        className="more-btn"
+        onClick={handleDisplayAction}
+        data-columnid={columnId}
+      >
         ...
       </div>
 
       {displayAction && (
-        <ListActionStyled>
+        <ListActionStyled data-columnid={columnId}>
           <p className="action-heading">List actions</p>
 
           <p className="action-item" onMouseDown={handleDefault}>

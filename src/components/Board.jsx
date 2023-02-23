@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-
-import { initData } from "../actions/initData";
-
-import { fetchBoard, createNewColumn } from "../actions/callApi";
-
+import { fetchBoard } from "../actions/callApi";
+import { createNewColumn } from "../actions/callApi";
 // import component
 import Columns from "./Columns";
-import AddToggleCol from "./AddToggleCol";
 import AddField from "./AddField";
+
 const BoardBg = styled.div`
   background: #d29034;
   height: calc(100vh - 90px);
@@ -62,6 +59,29 @@ const Board = () => {
   const [columns, setColumns] = useState([]);
   const [board, setBoard] = useState({});
 
+  const [newTitle, setNewTitle] = useState("");
+  const addTitleRef = useRef(null);
+  const handleInputNewTitle = (e) => {
+    setNewTitle(e.target.value);
+  };
+
+  const handleAddColumn = (title) => {
+    const newColumnToAdd = {
+      boardId: boardId,
+      title: title.trim(),
+    };
+    createNewColumn(newColumnToAdd).then((column) => {
+      const newColumns = [...columns];
+      newColumns.push(column);
+      let newBoard = { ...board };
+      newBoard.columnOrder = newColumns.map((column) => column._id);
+      newBoard.columns = newColumns;
+      setColumns(newColumns);
+      setBoard(newBoard);
+      addTitleRef.current.focus();
+    });
+  };
+
   // Drop n Drag Column
   const dragItem = useRef();
   const dragOverItem = useRef();
@@ -70,19 +90,14 @@ const Board = () => {
   useEffect(() => {
     fetchBoard(boardId).then((board) => {
       const columnsDb = board.columns;
-
       columnsDb.sort((a, b) => {
         return (
           board.columnOrder.indexOf(a._id) - board.columnOrder.indexOf(b._id)
         );
       });
-
       setBoard(board);
       setColumns(columnsDb);
     });
-
-    if (initData) {
-    }
   }, []);
 
   // Xử lý Drag n Drop
@@ -98,7 +113,6 @@ const Board = () => {
     const copyColums = [...columns];
     const dragColumn = copyColums[dragItem.current];
     const dragOverColumn = copyColums[dragOverItem.current];
-
     if (
       (dragItem.current === 0 &&
         dragOverItem.current === board.columnOrder.length - 1) ||
@@ -117,10 +131,8 @@ const Board = () => {
         board.columnOrder.indexOf(a._id) - board.columnOrder.indexOf(b._id)
       );
     });
-
     dragItem.current = null;
     dragOverItem.current = null;
-
     setColumns(copyColums);
   };
 
@@ -137,11 +149,16 @@ const Board = () => {
               onDragStart={(e) => dragStart(e, index)}
               onDragEnter={(e) => dragEnter(e, index)}
               onDragEnd={drop}
+              boardId={boardId}
             />
           ))}
-
           <div className="add-column-field">
-            <AddField />
+            <AddField
+              newTitle={newTitle}
+              onChange={handleInputNewTitle}
+              handleAddColumn={handleAddColumn}
+              addTitleRef={addTitleRef}
+            />
           </div>
         </div>
       </BoardBg>

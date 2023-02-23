@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import styled from "styled-components";
 
 const TitleEditableStyled = styled.div`
@@ -20,9 +20,7 @@ const TitleEditableStyled = styled.div`
   }
 `;
 
-const TitleEditable = ({ title }) => {
-  const titleRef = useRef(null);
-
+const TitleEditable = ({ title, onBlur, onChange, titleRef }) => {
   const handleSelectAllTitle = () => {
     titleRef.current.focus();
     titleRef.current.select();
@@ -38,6 +36,8 @@ const TitleEditable = ({ title }) => {
         onDoubleClick={handleSelectAllTitle}
         ref={titleRef}
         draggable="true"
+        onChange={onChange}
+        onBlur={onBlur}
       />
     </TitleEditableStyled>
   );

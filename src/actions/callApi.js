@@ -15,3 +15,8 @@ export const createNewCard = async (data) => {
   const req = await axios.post(`${API_ROOT}/v1/cards`, data);
   return req.data;
 };
+
+export const updateTitle = async (id, data) => {
+  const req = await axios.put(`${API_ROOT}/v1/columns/${id}`, data);
+  return req.data;
+};

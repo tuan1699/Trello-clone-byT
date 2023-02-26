@@ -48,7 +48,7 @@ const ListActionStyled = styled.div`
   }
 `;
 
-const MoreBtn = ({ columnId }) => {
+const MoreBtn = ({ columnId, handleDeleteColumn }) => {
   const [displayAction, setDisplayAction] = useState(false);
 
   const handleDisplayAction = (e) => {
@@ -67,6 +67,11 @@ const MoreBtn = ({ columnId }) => {
   const handleDefault = (e) => {
     e.preventDefault();
     e.stopPropagation();
+  };
+
+  const deleteColumn = () => {
+    handleDeleteColumn();
+    setDisplayAction(false);
   };
 
   return (
@@ -89,7 +94,11 @@ const MoreBtn = ({ columnId }) => {
           <p className="action-item" onMouseDown={handleDefault}>
             Copy list...
           </p>
-          <p className="action-item" onMouseDown={handleDefault}>
+          <p
+            className="action-item"
+            onMouseDown={handleDefault}
+            onClick={deleteColumn}
+          >
             Remove list...
           </p>
           <p className="action-item" onMouseDown={handleDefault}>

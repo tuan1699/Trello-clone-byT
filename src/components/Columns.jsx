@@ -4,8 +4,7 @@ import Card from "./Card";
 import TitleEditable from "./TitleEditable";
 import MoreBtn from "./MoreBtn";
 import AddCardField from "./AddCardField";
-import { updateTitle } from "../actions/callApi";
-import { createNewCard } from "../actions/callApi";
+import { updateTitle, createNewCard, deleteColumn } from "../actions/callApi";
 
 const ColumnsStyled = styled.div`
   flex: 0 0 auto;
@@ -82,6 +81,13 @@ const Columns = memo(function Columns({
   onDragEnter,
   onDragEnd,
   boardId,
+  updateColumns,
+  columnIndex,
+  onCardDragStart,
+  onDragOver,
+  onDrop,
+  handleDropCard,
+  handleCardOver,
 }) {
   const [cards, setCards] = useState([]);
 
@@ -95,19 +101,11 @@ const Columns = memo(function Columns({
   // STATE display
   const [displayAddCard, setDisplayAddCard] = useState(false);
 
-  // STATE drag n drop
-  const [columnStart, setColumnStart] = useState("");
-  const [columnEnd, setColumnEnd] = useState("");
-
   // STATE add card
   const [cardTitle, setCardTitle] = useState("");
   const handleInputCard = (e) => {
     setCardTitle(e.target.value);
   };
-
-  // Drag n Drop
-  const dragCard = useRef(null);
-  const dragOverCard = useRef(null);
 
   useEffect(() => {
     if (column) {
@@ -173,29 +171,26 @@ const Columns = memo(function Columns({
   };
   const handleClose = () => setDisplayAddCard(false);
 
-  // Xử lý Drag n Drop
-  const dragCardStart = (e, position, columnId) => {
-    dragCard.current = position;
-    setColumnStart(columnId);
-    console.log(columnStart);
+  const handleDeleteColumn = () => {
+    const confirmDelete = window.confirm("Do you want delete entire columns?");
+    if (confirmDelete) {
+      const newColumn = { ...column, _destroy: true };
+      console.log(newColumn);
+      deleteColumn(newColumn._id, newColumn).then((updatedColumn) => {
+        updateColumns(updatedColumn);
+      });
+    }
   };
 
-  const dragCardEnter = (e, position, columnId) => {
-    dragOverCard.current = position;
-    setColumnEnd(columnId);
-    console.log(columnEnd);
-  };
-
-  const dropCard = () => {
-    console.log("start", columnStart);
-    console.log("end", columnEnd);
-    console.log("index", dragCard.current);
-    console.log("indexBehind", dragOverCard.current);
-  };
+  // Xử lý Drag n Drop Card
 
   return (
     <>
-      <ColumnsStyled>
+      <ColumnsStyled
+        className="column"
+        onDragOver={onDragOver}
+        // onDrop={(e) => onDrop(e, columnIndex)}
+      >
         <ColumnHeadingStyled
           draggable="true"
           onDragStart={onDragStart}
@@ -208,17 +203,23 @@ const Columns = memo(function Columns({
             onBlur={handleSaveTitleChange}
             titleRef={titleRef}
           />
-          <MoreBtn columnId={column._id} />
+          <MoreBtn
+            columnId={column._id}
+            handleDeleteColumn={handleDeleteColumn}
+          />
         </ColumnHeadingStyled>
         <div className="list-task">
           {cards.map((card, index) => (
             <Card
               title={card.title}
               key={index}
+              card={card}
               columnId={column._id}
-              onDragStart={(e) => dragCardStart(e, index, card.columnId)}
-              onDragEnter={(e) => dragCardEnter(e, index, card.columnId)}
-              onDragEnd={dropCard}
+              columnIndex={columnIndex}
+              onCardDragStart={onCardDragStart}
+              handleDropCard={handleDropCard}
+              cardIndex={index}
+              handleCardOver={handleCardOver}
             />
           ))}
 

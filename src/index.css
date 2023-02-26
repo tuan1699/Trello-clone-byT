@@ -19,3 +19,33 @@ textarea {
 img {
   width: 100%;
 }
+
+.card-preview {
+  position: absolute;
+  /* opacity: 0.8; */
+  pointer-events: none;
+  transition: transform 0.3s ease-in-out;
+  transform: rotate(5deg);
+}
+
+.shadow {
+  background-color: #a97329 !important;
+  color: #a97329 !important;
+}
+
+.shadow div {
+  background-color: #a97329 !important;
+  color: #a97329 !important;
+  box-shadow: none;
+}
+
+.shadow input {
+  background-color: #a97329 !important;
+  color: #a97329 !important;
+  outline: none;
+}
+
+.shadow input:focus {
+  border: none;
+  outline: none;
+}

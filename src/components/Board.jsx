@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { fetchBoard } from "../actions/callApi";
-import { createNewColumn } from "../actions/callApi";
+import { createNewColumn, updateBoard } from "../actions/callApi";
+import { cloneDeep } from "lodash";
+
 // import component
 import Columns from "./Columns";
 import AddField from "./AddField";
@@ -58,7 +60,8 @@ const Board = () => {
   const boardId = "63f5926aebd6fc01fc46e1b8";
   const [columns, setColumns] = useState([]);
   const [board, setBoard] = useState({});
-
+  const [isDropColumn, setIsDropColumn] = useState(false);
+  const [isDropCard, setIsDropCard] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const addTitleRef = useRef(null);
   const handleInputNewTitle = (e) => {
@@ -82,9 +85,31 @@ const Board = () => {
     });
   };
 
+  const updateColumns = (updatedColumn) => {
+    const updatedColumnId = updatedColumn._id;
+    let newColumns = [...columns];
+    let updatedColumnIndex = newColumns.findIndex(
+      (column) => column._id === updatedColumnId
+    );
+
+    if (updatedColumn._destroy) {
+      newColumns.splice(updatedColumnIndex, 1);
+    }
+
+    let newBoard = { ...board };
+
+    newBoard.columnOrder = newColumns.map((column) => column._id);
+
+    newBoard.columns = newColumns;
+
+    setBoard(newBoard);
+    setColumns(newColumns);
+  };
+
   // Drop n Drag Column
   const dragItem = useRef();
   const dragOverItem = useRef();
+  const cardDragOver = useRef();
 
   // Lấy data
   useEffect(() => {
@@ -102,38 +127,138 @@ const Board = () => {
 
   // Xử lý Drag n Drop
   const dragStart = (e, position) => {
+    setIsDropColumn(true);
     dragItem.current = position;
+
+    // animation
+    let column = e.target.parentElement;
+    while (!column.matches(".column")) {
+      column = column.parentElement;
+    }
+    let columnPreview = column.cloneNode(true);
+    columnPreview.classList.add("card-preview");
+    document.body.appendChild(columnPreview);
+    column.classList.add("shadow");
+    let div = document.createElement("div");
+    e.dataTransfer.setDragImage(div, 0, 0);
   };
 
   const dragEnter = (e, position) => {
-    dragOverItem.current = position;
+    if (isDropColumn) {
+      dragOverItem.current = position;
+
+      const cardPreview = document.querySelector(".card-preview");
+
+      // moveAt(e.pageX, e.pageY);
+
+      function moveAt(pageX, pageY) {
+        cardPreview.style.left = pageX - cardPreview.offsetWidth / 2 + "px";
+        cardPreview.style.top = pageY - 20 + "px";
+      }
+
+      function onMouseMove(e) {
+        moveAt(e.pageX, e.pageY);
+      }
+
+      document.addEventListener("drag", onMouseMove);
+    }
   };
 
   const drop = (e) => {
+    setIsDropColumn(false);
     const copyColums = [...columns];
+    const copyBoard = { ...board };
     const dragColumn = copyColums[dragItem.current];
     const dragOverColumn = copyColums[dragOverItem.current];
     if (
       (dragItem.current === 0 &&
-        dragOverItem.current === board.columnOrder.length - 1) ||
-      (dragItem.current === board.columnOrder.length - 1 &&
+        dragOverItem.current === copyBoard.columnOrder.length - 1) ||
+      (dragItem.current === copyBoard.columnOrder.length - 1 &&
         dragOverItem.current === 0)
     ) {
-      board.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
-      board.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
+      copyBoard.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
+      copyBoard.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
     } else {
-      board.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
-      board.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
+      copyBoard.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
+      copyBoard.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
     }
-
     copyColums.sort((a, b) => {
       return (
-        board.columnOrder.indexOf(a._id) - board.columnOrder.indexOf(b._id)
+        copyBoard.columnOrder.indexOf(a._id) -
+        copyBoard.columnOrder.indexOf(b._id)
       );
     });
     dragItem.current = null;
     dragOverItem.current = null;
     setColumns(copyColums);
+    copyBoard.columnOrder = copyColums.map((column) => column._id);
+    setBoard(copyBoard);
+    updateBoard(copyBoard._id, copyBoard).catch((error) => {
+      console.log(error);
+      setColumns(columns);
+      setBoard(board);
+    });
+
+    const cardPreview = document.querySelector(".card-preview");
+    const shadow = document.querySelector(".shadow");
+    shadow.classList.remove("shadow");
+    if (cardPreview) {
+      cardPreview.remove();
+    }
+  };
+
+  const onCardDragStart = (e, card, columnIndex, cardIndex) => {
+    e.dataTransfer.setData(
+      "card",
+      JSON.stringify({ card, columnIndex, cardIndex })
+    );
+    setIsDropCard(true);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleCardOver = (e, cardIndex) => {
+    cardDragOver.current = cardIndex;
+  };
+
+  const handleDropCard = (e, dropColumnIndex) => {
+    if (isDropCard) {
+      e.preventDefault();
+      const dragData = JSON.parse(e.dataTransfer.getData("card")) || null;
+
+      if (dragData) {
+        const { card, columnIndex, cardIndex } = dragData;
+
+        if (dropColumnIndex !== columnIndex) {
+          console.log("Khác cột");
+          console.log("dragIndex", cardIndex);
+          const newColumns = [...columns];
+          newColumns[columnIndex].cards.splice(
+            newColumns[columnIndex].cards.indexOf(card),
+            1
+          );
+          newColumns[dropColumnIndex].cards.splice(
+            cardDragOver.current + 1,
+            0,
+            card
+          );
+          setColumns(newColumns);
+        } else {
+          console.log("cùng cột");
+          if (cardDragOver.current !== cardIndex) {
+            let newColumns = cloneDeep(columns);
+            let relatedCard =
+              newColumns[columnIndex].cards[cardDragOver.current];
+            newColumns[columnIndex].cards.splice(cardIndex, 1, relatedCard);
+            newColumns[columnIndex].cards.splice(cardDragOver.current, 1, card);
+            setColumns(newColumns);
+          }
+        }
+      }
+    }
+    setIsDropCard(false);
   };
 
   if (!columns) {
@@ -150,6 +275,12 @@ const Board = () => {
               onDragEnter={(e) => dragEnter(e, index)}
               onDragEnd={drop}
               boardId={boardId}
+              updateColumns={updateColumns}
+              columnIndex={index}
+              onCardDragStart={onCardDragStart}
+              onDragOver={handleDragOver}
+              handleDropCard={handleDropCard}
+              handleCardOver={handleCardOver}
             />
           ))}
           <div className="add-column-field">

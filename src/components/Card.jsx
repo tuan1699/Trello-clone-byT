@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { updateCard } from "../actions/callApi";
 
 const CardStyled = styled.div`
   position: relative;
@@ -41,28 +42,129 @@ const CardStyled = styled.div`
   .edit-btn i:hover .edit-btn {
     background: #ebecf0;
   }
+
+  .edit-field {
+    position: absolute;
+    width: 256px;
+    top: 0px;
+    right: 0px;
+    z-index: 100;
+  }
+
+  #input-edit {
+    width: 100%;
+    // min-height: 90px;
+    padding: 8px 14px;
+    border: none;
+    outline: none;
+    background: #fff;
+    border-radius: 3px;
+    margin-bottom: 4px;
+  }
+
+  .save-btn {
+    padding: 8px 16px;
+    background: #0079bf;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+`;
+
+const ModalStyled = styled.div`
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: #0009;
+  opacity: 1;
+  z-index: 10;
 `;
 
 const Card = ({
   title,
-  columnId,
-  onDragStart,
-  onDragEnter,
-  onDragEnd,
-  onDragLeave,
+  card,
+  columnIndex,
+  onCardDragStart,
+  handleDropCard,
+  cardIndex,
+  handleCardOver,
 }) => {
+  const [displayEdit, setDisplayEdit] = useState(false);
+  const [inputChange, setInputChange] = useState("");
+  const [titleCard, setTitleCard] = useState("");
+
+  useEffect(() => {
+    setInputChange(title);
+    setTitleCard(title);
+  }, [title]);
+
+  const handleInputChange = (e) => {
+    setInputChange(e.target.value);
+  };
+
+  const handleSave = () => {
+    if (inputChange.trim() !== "") {
+      setTitleCard(inputChange);
+      const newCard = {
+        ...card,
+        title: inputChange,
+      };
+      updateCard(card._id, newCard);
+      setDisplayEdit(false);
+    } else {
+      setTitleCard(title);
+      setDisplayEdit(false);
+    }
+  };
+
+  const handleDisplayEdit = (e) => {
+    setDisplayEdit(true);
+
+    window.addEventListener("click", (e) => {
+      if (
+        (e.target.matches(".edit-field") &&
+          !e.target.matches(".edit-btn") &&
+          !e.target.matches(".edit-icon")) ||
+        e.target.matches(".modal-bg")
+      ) {
+        setDisplayEdit(false);
+      }
+    });
+  };
+
   return (
-    <CardStyled
-      draggable="true"
-      onDragStart={onDragStart}
-      onDragEnter={onDragEnter}
-      onDragEnd={onDragEnd}
-    >
-      {title}
-      <div className="edit-btn">
-        <i className="fa-solid fa-pencil"></i>
-      </div>
-    </CardStyled>
+    <>
+      <CardStyled
+        draggable="true"
+        onDragStart={(e) => onCardDragStart(e, card, columnIndex, cardIndex)}
+        onDrop={(e) => handleDropCard(e, columnIndex)}
+        onDragEnter={(e) => handleCardOver(e, cardIndex)}
+      >
+        {titleCard}
+        <div className="edit-btn" onClick={handleDisplayEdit}>
+          <i className="fa-solid fa-pencil edit-icon"></i>
+        </div>
+        {displayEdit && (
+          <div className="edit-field">
+            <input
+              type="text"
+              name=""
+              id="input-edit"
+              value={inputChange}
+              autoFocus
+              onChange={handleInputChange}
+            />
+            <button className="save-btn" onClick={handleSave}>
+              Save
+            </button>
+          </div>
+        )}
+      </CardStyled>
+      {displayEdit && <ModalStyled className="modal-bg"></ModalStyled>}
+    </>
   );
 };
 

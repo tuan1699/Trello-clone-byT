@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, memo } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import Card from "./Card";
 import TitleEditable from "./TitleEditable";
@@ -75,7 +75,7 @@ const ColumnFooterStyled = styled.div`
   }
 `;
 
-const Columns = memo(function Columns({
+const Columns = function Columns({
   column,
   onDragStart,
   onDragEnter,
@@ -83,17 +83,21 @@ const Columns = memo(function Columns({
   boardId,
   updateColumns,
   columnIndex,
-  onCardDragStart,
-  onDragOver,
-  onDrop,
-  handleDropCard,
-  handleCardOver,
+  // onCardDragStart,
+  // handleDropCard,
+  // handleCardOver,
+  handleMouseUpCard,
+  // handleDragEndCard,
+  testDragEnd,
 }) {
   const [cards, setCards] = useState([]);
+  const [isDropCard, setIsDropCard] = useState(false);
+  const [dragPayload, setDragPayload] = useState({});
 
   // STATE update title
   const titleRef = useRef(null);
   const [title, setTitle] = useState("");
+  const cardDragOver = useRef();
 
   // STATE focus input card
   const cardRefInput = useRef(null);
@@ -106,6 +110,7 @@ const Columns = memo(function Columns({
   const handleInputCard = (e) => {
     setCardTitle(e.target.value);
   };
+  // ------------------------------------------------------------------
 
   useEffect(() => {
     if (column) {
@@ -118,12 +123,12 @@ const Columns = memo(function Columns({
   }, [column]);
 
   // Add Card
-  const handleAddCard = () => {
-    if (cardTitle !== "") {
+  const handleAddCard = (newCardTitle) => {
+    if (newCardTitle !== "") {
       const newCardToAdd = {
         boardId: boardId,
-        columnId: column._id,
-        title: cardTitle.trim(),
+        columnId: column._id, // column
+        title: newCardTitle.trim(),
       };
       createNewCard(newCardToAdd)
         .then((card) => {
@@ -141,26 +146,25 @@ const Columns = memo(function Columns({
     }
   };
 
-  // Handle change title
-  const handleChangeTitle = (e) => {
-    setTitle(e.target.value);
-  };
-  const handleSaveTitleChange = () => {
-    if (title.trim() === "") {
-      setTitle(column.title);
+  const handleSaveTitleChange = (newTitle) => {
+    if (newTitle.trim() === "") {
+      setTitle(column.title); // column
+    } else if (newTitle.trim() === column.title.trim()) {
+      // column
+      return;
     } else {
       const newColumn = {
-        ...column,
-        title: title,
+        ...column, // column
+        title: newTitle,
       };
-      updateTitle(column._id, newColumn);
+      updateTitle(column._id, newColumn); // column
     }
   };
   const handleToggleDisplay = () => {
     setDisplayAddCard(!displayAddCard);
     window.addEventListener("click", (e) => {
       if (
-        e.target.dataset.idcolumn !== column._id ||
+        e.target.dataset.idcolumn !== column._id || // column
         (!e.target.matches(".add-task") &&
           !e.target.matches("#input-card") &&
           !e.target.matches(".add-btn"))
@@ -174,12 +178,90 @@ const Columns = memo(function Columns({
   const handleDeleteColumn = () => {
     const confirmDelete = window.confirm("Do you want delete entire columns?");
     if (confirmDelete) {
-      const newColumn = { ...column, _destroy: true };
+      const newColumn = { ...column, _destroy: true }; // column
       console.log(newColumn);
       deleteColumn(newColumn._id, newColumn).then((updatedColumn) => {
         updateColumns(updatedColumn);
       });
     }
+  };
+
+  // ________________________________________________________________________________
+
+  const handleDragStartCardTest = (e, card, columnIndex, cardIndex) => {
+    setDragPayload({ card, columnIndex, cardIndex });
+    setIsDropCard(true);
+    let cardEl = e.target;
+    if (cardEl.matches(".card")) {
+      let cardPreview = cardEl.cloneNode(true);
+      cardPreview.classList.add("card-preview");
+      document.body.appendChild(cardPreview);
+      cardEl.classList.add("card-ghost");
+      let div = document.createElement("div");
+      e.dataTransfer.setDragImage(div, 0, 0);
+    }
+  };
+
+  const handleCardOverTest = (e, cardIndex, columnIndex) => {
+    cardDragOver.current = cardIndex;
+    if (isDropCard) {
+      const cardPreview = document.querySelector(".card-preview");
+      function moveAt(pageX, pageY) {
+        cardPreview.style.left = pageX - cardPreview.offsetWidth / 2 + "px";
+        cardPreview.style.top = pageY - 20 + "px";
+      }
+      function onMouseMove(e) {
+        moveAt(e.pageX, e.pageY);
+      }
+      document.addEventListener("drag", onMouseMove);
+    }
+  };
+
+  const handleDropCardTest = (e, dropIndex) => {
+    const { card, columnIndex, cardIndex } = dragPayload;
+
+    const eleBelow = document.elementFromPoint(e.clientX, e.clientY);
+    const indexColumnDrop = Number(eleBelow.dataset.indexcolumn);
+
+    const cardPreview = document.querySelector(".card-preview");
+    const cardGhost = document.querySelector(".card-ghost");
+    if (cardPreview && cardGhost) {
+      cardGhost.classList.remove("card-ghost");
+      cardPreview.remove();
+      e.preventDefault();
+    }
+
+    if (isDropCard) {
+      if (indexColumnDrop) {
+        if (dragPayload) {
+          if (indexColumnDrop !== columnIndex) {
+            // const newColumns = [...columns];
+            // newColumns[columnIndex].cards.splice(cardIndex, 1);
+            // newColumns[dropColumnIndex].cards.splice(
+            //   cardDragOver.current + 1,
+            //   0,
+            //   card
+            // );
+            // setColumns(newColumns);
+            console.log("Khác column");
+          } else {
+            console.log("cùng column");
+
+            if (cardDragOver.current !== cardIndex) {
+              const newCards = [...cards];
+
+              let relatedCard = newCards[cardDragOver.current];
+              newCards.splice(cardIndex, 1, relatedCard);
+              newCards.splice(cardDragOver.current, 1, card);
+              setCards(newCards);
+            } else {
+              console.log("không thay đổi");
+            }
+          }
+        }
+      }
+    }
+    // setIsDropCard(false);
   };
 
   // Xử lý Drag n Drop Card
@@ -188,38 +270,47 @@ const Columns = memo(function Columns({
     <>
       <ColumnsStyled
         className="column"
-        onDragOver={onDragOver}
-        // onDrop={(e) => onDrop(e, columnIndex)}
+        onDragOver={(e) => e.preventDefault()}
+        // onDrop={(e) => handleDropCard(e, columnIndex)}
       >
         <ColumnHeadingStyled
           draggable="true"
           onDragStart={onDragStart}
           onDragEnter={onDragEnter}
           onDragEnd={onDragEnd}
+          data-indexcolumn={columnIndex}
         >
           <TitleEditable
             title={title}
-            onChange={handleChangeTitle}
-            onBlur={handleSaveTitleChange}
+            handleSaveTitleChange={handleSaveTitleChange}
             titleRef={titleRef}
+            data-indexcolumn={columnIndex}
+            columnIndex={columnIndex}
           />
           <MoreBtn
-            columnId={column._id}
+            columnId={column._id} // column
             handleDeleteColumn={handleDeleteColumn}
+            columnIndex={columnIndex}
           />
         </ColumnHeadingStyled>
-        <div className="list-task">
+        <div className="list-task" data-indexcolumn={columnIndex}>
           {cards.map((card, index) => (
             <Card
               title={card.title}
               key={index}
               card={card}
-              columnId={column._id}
+              columnId={column._id} // column
               columnIndex={columnIndex}
-              onCardDragStart={onCardDragStart}
-              handleDropCard={handleDropCard}
               cardIndex={index}
-              handleCardOver={handleCardOver}
+              handleMouseUpCard={handleMouseUpCard}
+              testDragEnd={testDragEnd}
+              // onCardDragStart={onCardDragStart}
+              // handleDragEndCard={handleDragEndCard}
+              // handleCardOver={handleCardOver}
+              // handleDropCard={handleDropCard}
+              handleDragStartCardTest={handleDragStartCardTest}
+              handleCardOverTest={handleCardOverTest}
+              handleDropCardTest={handleDropCardTest}
             />
           ))}
 
@@ -228,16 +319,21 @@ const Columns = memo(function Columns({
               handleClose={handleClose}
               onChange={handleInputCard}
               cardTitle={cardTitle}
-              onClick={handleAddCard}
+              handleAddCard={handleAddCard}
               cardRefInput={cardRefInput}
-              columnId={column._id}
+              columnId={column._id} // column
+              columnIndex={columnIndex}
             />
           )}
         </div>
 
         {displayAddCard || (
           <ColumnFooterStyled onClick={handleToggleDisplay}>
-            <div className="add-task" data-idcolumn={column._id}>
+            <div
+              className="add-task"
+              data-idcolumn={column._id}
+              data-indexcolumn={columnIndex}
+            >
               {" "}
               <i className="fa-solid fa-plus"></i> Add a card
             </div>
@@ -246,6 +342,6 @@ const Columns = memo(function Columns({
       </ColumnsStyled>
     </>
   );
-});
+};
 
 export default Columns;

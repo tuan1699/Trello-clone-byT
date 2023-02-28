@@ -48,7 +48,7 @@ const ListActionStyled = styled.div`
   }
 `;
 
-const MoreBtn = ({ columnId, handleDeleteColumn }) => {
+const MoreBtn = ({ columnId, handleDeleteColumn, columnIndex }) => {
   const [displayAction, setDisplayAction] = useState(false);
 
   const handleDisplayAction = (e) => {
@@ -80,6 +80,7 @@ const MoreBtn = ({ columnId, handleDeleteColumn }) => {
         className="more-btn"
         onClick={handleDisplayAction}
         data-columnid={columnId}
+        data-indexcolumn={columnIndex}
       >
         ...
       </div>

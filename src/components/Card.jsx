@@ -13,6 +13,7 @@ const CardStyled = styled.div`
   color: #6b778c;
   margin-bottom: 8px;
   cursor: pointer;
+  width: 256px;
 
   &:hover {
     cursor: pointer;
@@ -87,10 +88,13 @@ const Card = ({
   title,
   card,
   columnIndex,
-  onCardDragStart,
-  handleDropCard,
+  // onCardDragStart,
   cardIndex,
-  handleCardOver,
+  // handleDropCard,
+  // handleCardOver,
+  handleDragStartCardTest,
+  handleCardOverTest,
+  handleDropCardTest,
 }) => {
   const [displayEdit, setDisplayEdit] = useState(false);
   const [inputChange, setInputChange] = useState("");
@@ -139,9 +143,15 @@ const Card = ({
     <>
       <CardStyled
         draggable="true"
-        onDragStart={(e) => onCardDragStart(e, card, columnIndex, cardIndex)}
-        onDrop={(e) => handleDropCard(e, columnIndex)}
-        onDragEnter={(e) => handleCardOver(e, cardIndex)}
+        // onDragStart={(e) => onCardDragStart(e, card, columnIndex, cardIndex)}
+        // onDragEnter={(e) => handleCardOver(e, cardIndex, columnIndex)}
+        onDragEnd={(e) => handleDropCardTest(e, columnIndex)}
+        onDragStart={(e) =>
+          handleDragStartCardTest(e, card, columnIndex, cardIndex)
+        }
+        onDragEnter={(e) => handleCardOverTest(e, cardIndex, columnIndex)}
+        className="card"
+        data-indexcolumn={columnIndex}
       >
         {titleCard}
         <div className="edit-btn" onClick={handleDisplayEdit}>

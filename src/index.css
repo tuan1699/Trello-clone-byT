@@ -14,6 +14,7 @@ textarea {
   -moz-osx-font-smoothing: grayscale;
   margin: 0px;
   padding: 0px;
+  overflow: hidden;
 }
 
 img {
@@ -48,4 +49,26 @@ img {
 .shadow input:focus {
   border: none;
   outline: none;
+}
+
+.card-preview {
+  position: absolute !important;
+  pointer-events: none;
+  transition: transform 0.3s ease-in-out;
+  transform: rotate(5deg);
+  z-index: 10000;
+}
+
+.card-ghost {
+  background-color: #e2e4ea !important;
+  transform: rotate(0deg) !important;
+  color: #e2e4ea !important;
+}
+
+.card-ghost .edit-btn {
+  background-color: #e2e4ea !important;
+}
+
+.dynamic-ghost {
+  background-color: #e2e4ea;
 }

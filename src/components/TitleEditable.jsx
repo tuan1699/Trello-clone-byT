@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const TitleEditableStyled = styled.div`
@@ -20,24 +20,42 @@ const TitleEditableStyled = styled.div`
   }
 `;
 
-const TitleEditable = ({ title, onBlur, onChange, titleRef }) => {
+const TitleEditable = ({
+  title,
+  handleSaveTitleChange,
+  titleRef,
+  columnIndex,
+  columnId,
+}) => {
   const handleSelectAllTitle = () => {
     titleRef.current.focus();
     titleRef.current.select();
+  };
+
+  const [titleColumn, setTitleColumn] = useState("");
+
+  useEffect(() => {
+    setTitleColumn(title);
+  }, [title]);
+
+  // Handle change title
+  const handleChangeTitle = (e) => {
+    setTitleColumn(e.target.value);
   };
 
   return (
     <TitleEditableStyled>
       <input
         type="text"
-        value={title}
+        value={titleColumn}
         className="title-editable"
-        // onMouseDown={(e) => e.preventDefault()}
         onDoubleClick={handleSelectAllTitle}
         ref={titleRef}
         draggable="true"
-        onChange={onChange}
-        onBlur={onBlur}
+        onChange={handleChangeTitle}
+        onBlur={() => handleSaveTitleChange(titleColumn)}
+        data-indexcolumn={columnIndex}
+        data-idcolumn={columnId}
       />
     </TitleEditableStyled>
   );

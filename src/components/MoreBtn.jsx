@@ -48,12 +48,13 @@ const ListActionStyled = styled.div`
   }
 `;
 
-const MoreBtn = ({ columnId, handleDeleteColumn }) => {
+const MoreBtn = ({ columnId, handleDeleteColumn, columnIndex }) => {
   const [displayAction, setDisplayAction] = useState(false);
 
   const handleDisplayAction = (e) => {
+    console.log("test");
     setDisplayAction(!displayAction);
-
+    console.log(displayAction);
     window.addEventListener("click", (e) => {
       if (
         e.target.dataset.columnid !== columnId &&
@@ -68,18 +69,17 @@ const MoreBtn = ({ columnId, handleDeleteColumn }) => {
     e.preventDefault();
     e.stopPropagation();
   };
-
   const deleteColumn = () => {
     handleDeleteColumn();
     setDisplayAction(false);
   };
-
   return (
     <MoreBtnStyled>
       <div
         className="more-btn"
         onClick={handleDisplayAction}
         data-columnid={columnId}
+        data-indexcolumn={columnIndex}
       >
         ...
       </div>

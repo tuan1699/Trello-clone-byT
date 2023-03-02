@@ -13,15 +13,13 @@ const CardStyled = styled.div`
   color: #6b778c;
   margin-bottom: 8px;
   cursor: pointer;
-
+  width: 256px;
   &:hover {
     cursor: pointer;
   }
-
   &:hover .edit-btn {
     display: flex;
   }
-
   .edit-btn {
     position: absolute;
     top: 2px;
@@ -34,15 +32,12 @@ const CardStyled = styled.div`
     align-items: center;
     border-radius: 2px;
   }
-
   .edit-btn i {
     font-size: 12px;
   }
-
   .edit-btn i:hover .edit-btn {
     background: #ebecf0;
   }
-
   .edit-field {
     position: absolute;
     width: 256px;
@@ -50,7 +45,6 @@ const CardStyled = styled.div`
     right: 0px;
     z-index: 100;
   }
-
   #input-edit {
     width: 100%;
     // min-height: 90px;
@@ -61,7 +55,6 @@ const CardStyled = styled.div`
     border-radius: 3px;
     margin-bottom: 4px;
   }
-
   .save-btn {
     padding: 8px 16px;
     background: #0079bf;
@@ -87,14 +80,16 @@ const Card = ({
   title,
   card,
   columnIndex,
-  onCardDragStart,
-  handleDropCard,
   cardIndex,
+  onCardDragStart,
   handleCardOver,
+  handleDragEndCard,
+  columnId,
 }) => {
   const [displayEdit, setDisplayEdit] = useState(false);
   const [inputChange, setInputChange] = useState("");
   const [titleCard, setTitleCard] = useState("");
+  const [isDropCard, setIsDropCard] = useState(false);
 
   useEffect(() => {
     setInputChange(title);
@@ -122,7 +117,6 @@ const Card = ({
 
   const handleDisplayEdit = (e) => {
     setDisplayEdit(true);
-
     window.addEventListener("click", (e) => {
       if (
         (e.target.matches(".edit-field") &&
@@ -139,9 +133,19 @@ const Card = ({
     <>
       <CardStyled
         draggable="true"
-        onDragStart={(e) => onCardDragStart(e, card, columnIndex, cardIndex)}
-        onDrop={(e) => handleDropCard(e, columnIndex)}
-        onDragEnter={(e) => handleCardOver(e, cardIndex)}
+        onDragStart={(e) => {
+          setIsDropCard(true);
+          return onCardDragStart(e, card, columnIndex, cardIndex, columnId);
+        }}
+        onDragEnter={(e) => {
+          handleCardOver(e, cardIndex, columnId);
+        }}
+        onDragEnd={(e) => {
+          setIsDropCard(false);
+          return handleDragEndCard(e, card, columnIndex, cardIndex);
+        }}
+        className="card"
+        data-indexcolumn={columnIndex}
       >
         {titleCard}
         <div className="edit-btn" onClick={handleDisplayEdit}>

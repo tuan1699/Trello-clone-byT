@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, memo } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import Card from "./Card";
 import TitleEditable from "./TitleEditable";
@@ -15,34 +15,28 @@ const ColumnsStyled = styled.div`
   margin-bottom: 20px;
   margin-right: 5px;
   margin-left: 5px;
-
   .list-task {
     max-height: 550px;
     overflow-y: scroll;
-
     ::-webkit-scrollbar {
       width: 8px;
       border: solid 3px transparent;
     }
-
     ::-webkit-scrollbar-thumb {
       background: #bfc4ce;
       border-radius: 5px;
     }
   }
-
   .drop-preview {
     background: #e2e4ea;
     margin-bottom: 8px;
   }
-
   .card-ghost {
     transition: transform 0.18s ease;
     transform: rotateZ(5deg);
     font-weight: 400;
     color: #223555;
   }
-
   .card-ghost-drop {
     transition: transform 0.18s ease-in-out;
     transform: rotateZ(0deg);
@@ -58,7 +52,6 @@ const ColumnHeadingStyled = styled.div`
 `;
 const ColumnFooterStyled = styled.div`
   height: 38px;
-
   .add-task {
     font-size: 14px;
     color: #5e6c84;
@@ -66,7 +59,6 @@ const ColumnFooterStyled = styled.div`
     margin-right: 12px;
     border-radius: 3px;
     transition: all ease 0.2s;
-
     &:hover {
       cursor: pointer;
       background: #dadbe2;
@@ -74,7 +66,6 @@ const ColumnFooterStyled = styled.div`
     }
   }
 `;
-
 const Columns = memo(function Columns({
   column,
   onDragStart,
@@ -84,29 +75,23 @@ const Columns = memo(function Columns({
   updateColumns,
   columnIndex,
   onCardDragStart,
-  onDragOver,
-  onDrop,
-  handleDropCard,
   handleCardOver,
+  handleDragEndCard,
 }) {
   const [cards, setCards] = useState([]);
-
+  const [isDropColumn, setIsDropColumn] = useState(false);
   // STATE update title
   const titleRef = useRef(null);
   const [title, setTitle] = useState("");
-
   // STATE focus input card
   const cardRefInput = useRef(null);
-
   // STATE display
   const [displayAddCard, setDisplayAddCard] = useState(false);
-
   // STATE add card
   const [cardTitle, setCardTitle] = useState("");
   const handleInputCard = (e) => {
     setCardTitle(e.target.value);
   };
-
   useEffect(() => {
     if (column) {
       column.cards.sort((a, b) => {
@@ -116,14 +101,13 @@ const Columns = memo(function Columns({
       setTitle(column.title);
     }
   }, [column]);
-
   // Add Card
-  const handleAddCard = () => {
-    if (cardTitle !== "") {
+  const handleAddCard = (newCardTitle) => {
+    if (newCardTitle !== "") {
       const newCardToAdd = {
         boardId: boardId,
-        columnId: column._id,
-        title: cardTitle.trim(),
+        columnId: column._id, // column
+        title: newCardTitle.trim(),
       };
       createNewCard(newCardToAdd)
         .then((card) => {
@@ -140,18 +124,14 @@ const Columns = memo(function Columns({
       cardRefInput.current.focus();
     }
   };
-
-  // Handle change title
-  const handleChangeTitle = (e) => {
-    setTitle(e.target.value);
-  };
-  const handleSaveTitleChange = () => {
-    if (title.trim() === "") {
-      setTitle(column.title);
+  const handleSaveTitleChange = (newTitle) => {
+    if (newTitle.trim() === "") {
+    } else if (newTitle.trim() === column.title.trim()) {
+      return;
     } else {
       const newColumn = {
         ...column,
-        title: title,
+        title: newTitle,
       };
       updateTitle(column._id, newColumn);
     }
@@ -160,7 +140,7 @@ const Columns = memo(function Columns({
     setDisplayAddCard(!displayAddCard);
     window.addEventListener("click", (e) => {
       if (
-        e.target.dataset.idcolumn !== column._id ||
+        e.target.dataset.idcolumn !== column._id || // column
         (!e.target.matches(".add-task") &&
           !e.target.matches("#input-card") &&
           !e.target.matches(".add-btn"))
@@ -170,45 +150,59 @@ const Columns = memo(function Columns({
     });
   };
   const handleClose = () => setDisplayAddCard(false);
-
   const handleDeleteColumn = () => {
     const confirmDelete = window.confirm("Do you want delete entire columns?");
     if (confirmDelete) {
-      const newColumn = { ...column, _destroy: true };
+      const newColumn = { ...column, _destroy: true }; // column
       console.log(newColumn);
       deleteColumn(newColumn._id, newColumn).then((updatedColumn) => {
         updateColumns(updatedColumn);
       });
     }
   };
-
-  // Xử lý Drag n Drop Card
-
   return (
     <>
       <ColumnsStyled
         className="column"
-        onDragOver={onDragOver}
-        // onDrop={(e) => onDrop(e, columnIndex)}
+        data-idcolumn={column._id}
+        onDragOver={(e) => e.preventDefault()}
       >
         <ColumnHeadingStyled
           draggable="true"
-          onDragStart={onDragStart}
-          onDragEnter={onDragEnter}
-          onDragEnd={onDragEnd}
+          onDragStart={(e) => {
+            setIsDropColumn(true);
+            return onDragStart(e, columnIndex);
+          }}
+          onDragEnter={(e) => {
+            return onDragEnter(e, columnIndex);
+          }}
+          onDragEnd={(e) => {
+            if (isDropColumn) return onDragEnd(e);
+            setIsDropColumn(false);
+          }}
+          data-indexcolumn={columnIndex}
         >
           <TitleEditable
             title={title}
-            onChange={handleChangeTitle}
-            onBlur={handleSaveTitleChange}
+            handleSaveTitleChange={handleSaveTitleChange}
             titleRef={titleRef}
+            data-indexcolumn={columnIndex}
+            data-idcolumn={column._id}
+            columnIndex={columnIndex}
+            columnId={column._id}
           />
           <MoreBtn
             columnId={column._id}
             handleDeleteColumn={handleDeleteColumn}
+            columnIndex={columnIndex}
           />
         </ColumnHeadingStyled>
-        <div className="list-task">
+
+        <div
+          className="list-task"
+          data-indexcolumn={columnIndex}
+          data-idcolumn={column._id}
+        >
           {cards.map((card, index) => (
             <Card
               title={card.title}
@@ -216,28 +210,31 @@ const Columns = memo(function Columns({
               card={card}
               columnId={column._id}
               columnIndex={columnIndex}
-              onCardDragStart={onCardDragStart}
-              handleDropCard={handleDropCard}
               cardIndex={index}
+              onCardDragStart={onCardDragStart}
+              handleDragEndCard={handleDragEndCard}
               handleCardOver={handleCardOver}
             />
           ))}
-
           {displayAddCard && (
             <AddCardField
               handleClose={handleClose}
               onChange={handleInputCard}
               cardTitle={cardTitle}
-              onClick={handleAddCard}
+              handleAddCard={handleAddCard}
               cardRefInput={cardRefInput}
               columnId={column._id}
+              columnIndex={columnIndex}
             />
           )}
         </div>
-
         {displayAddCard || (
           <ColumnFooterStyled onClick={handleToggleDisplay}>
-            <div className="add-task" data-idcolumn={column._id}>
+            <div
+              className="add-task"
+              data-idcolumn={column._id}
+              data-indexcolumn={columnIndex}
+            >
               {" "}
               <i className="fa-solid fa-plus"></i> Add a card
             </div>
@@ -247,5 +244,4 @@ const Columns = memo(function Columns({
     </>
   );
 });
-
 export default Columns;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 
 const AddCardFieldStyled = styled.div`
@@ -61,12 +61,16 @@ const AddCardFieldStyled = styled.div`
 
 const AddCardField = ({
   handleClose,
-  onChange,
-  cardTitle,
-  onClick,
+  handleAddCard,
   cardRefInput,
   columnId,
 }) => {
+  const [cardTitle, setCardTitle] = useState("");
+
+  const handleInputCard = (e) => {
+    setCardTitle(e.target.value);
+  };
+
   return (
     <>
       <AddCardFieldStyled>
@@ -78,7 +82,7 @@ const AddCardField = ({
           cols="10"
           rows="5"
           autoFocus
-          onChange={onChange}
+          onChange={handleInputCard}
           value={cardTitle}
           ref={cardRefInput}
           data-idcolumn={columnId}
@@ -86,7 +90,10 @@ const AddCardField = ({
         <div className="feature">
           <button
             className="add-btn"
-            onClick={onClick}
+            onClick={() => {
+              handleAddCard(cardTitle);
+              setCardTitle("");
+            }}
             data-idcolumn={columnId}
           >
             Add card

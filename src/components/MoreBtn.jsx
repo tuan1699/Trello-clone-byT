@@ -52,8 +52,9 @@ const MoreBtn = ({ columnId, handleDeleteColumn, columnIndex }) => {
   const [displayAction, setDisplayAction] = useState(false);
 
   const handleDisplayAction = (e) => {
+    console.log("test");
     setDisplayAction(!displayAction);
-
+    console.log(displayAction);
     window.addEventListener("click", (e) => {
       if (
         e.target.dataset.columnid !== columnId &&
@@ -68,12 +69,10 @@ const MoreBtn = ({ columnId, handleDeleteColumn, columnIndex }) => {
     e.preventDefault();
     e.stopPropagation();
   };
-
   const deleteColumn = () => {
     handleDeleteColumn();
     setDisplayAction(false);
   };
-
   return (
     <MoreBtnStyled>
       <div

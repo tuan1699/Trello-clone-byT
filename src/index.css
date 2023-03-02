@@ -68,3 +68,7 @@ img {
 .card-ghost .edit-btn {
   background-color: #e2e4ea !important;
 }
+
+.dynamic-ghost {
+  background-color: #e2e4ea;
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import Card from "./Card";
 import TitleEditable from "./TitleEditable";
@@ -15,34 +15,28 @@ const ColumnsStyled = styled.div`
   margin-bottom: 20px;
   margin-right: 5px;
   margin-left: 5px;
-
   .list-task {
     max-height: 550px;
     overflow-y: scroll;
-
     ::-webkit-scrollbar {
       width: 8px;
       border: solid 3px transparent;
     }
-
     ::-webkit-scrollbar-thumb {
       background: #bfc4ce;
       border-radius: 5px;
     }
   }
-
   .drop-preview {
     background: #e2e4ea;
     margin-bottom: 8px;
   }
-
   .card-ghost {
     transition: transform 0.18s ease;
     transform: rotateZ(5deg);
     font-weight: 400;
     color: #223555;
   }
-
   .card-ghost-drop {
     transition: transform 0.18s ease-in-out;
     transform: rotateZ(0deg);
@@ -58,7 +52,6 @@ const ColumnHeadingStyled = styled.div`
 `;
 const ColumnFooterStyled = styled.div`
   height: 38px;
-
   .add-task {
     font-size: 14px;
     color: #5e6c84;
@@ -66,7 +59,6 @@ const ColumnFooterStyled = styled.div`
     margin-right: 12px;
     border-radius: 3px;
     transition: all ease 0.2s;
-
     &:hover {
       cursor: pointer;
       background: #dadbe2;
@@ -74,8 +66,7 @@ const ColumnFooterStyled = styled.div`
     }
   }
 `;
-
-const Columns = function Columns({
+const Columns = memo(function Columns({
   column,
   onDragStart,
   onDragEnter,
@@ -83,35 +74,24 @@ const Columns = function Columns({
   boardId,
   updateColumns,
   columnIndex,
-  // onCardDragStart,
-  // handleDropCard,
-  // handleCardOver,
-  handleMouseUpCard,
-  // handleDragEndCard,
-  testDragEnd,
+  onCardDragStart,
+  handleCardOver,
+  handleDragEndCard,
 }) {
   const [cards, setCards] = useState([]);
-  const [isDropCard, setIsDropCard] = useState(false);
-  const [dragPayload, setDragPayload] = useState({});
-
+  const [isDropColumn, setIsDropColumn] = useState(false);
   // STATE update title
   const titleRef = useRef(null);
   const [title, setTitle] = useState("");
-  const cardDragOver = useRef();
-
   // STATE focus input card
   const cardRefInput = useRef(null);
-
   // STATE display
   const [displayAddCard, setDisplayAddCard] = useState(false);
-
   // STATE add card
   const [cardTitle, setCardTitle] = useState("");
   const handleInputCard = (e) => {
     setCardTitle(e.target.value);
   };
-  // ------------------------------------------------------------------
-
   useEffect(() => {
     if (column) {
       column.cards.sort((a, b) => {
@@ -121,7 +101,6 @@ const Columns = function Columns({
       setTitle(column.title);
     }
   }, [column]);
-
   // Add Card
   const handleAddCard = (newCardTitle) => {
     if (newCardTitle !== "") {
@@ -145,19 +124,16 @@ const Columns = function Columns({
       cardRefInput.current.focus();
     }
   };
-
   const handleSaveTitleChange = (newTitle) => {
     if (newTitle.trim() === "") {
-      setTitle(column.title); // column
     } else if (newTitle.trim() === column.title.trim()) {
-      // column
       return;
     } else {
       const newColumn = {
-        ...column, // column
+        ...column,
         title: newTitle,
       };
-      updateTitle(column._id, newColumn); // column
+      updateTitle(column._id, newColumn);
     }
   };
   const handleToggleDisplay = () => {
@@ -174,7 +150,6 @@ const Columns = function Columns({
     });
   };
   const handleClose = () => setDisplayAddCard(false);
-
   const handleDeleteColumn = () => {
     const confirmDelete = window.confirm("Do you want delete entire columns?");
     if (confirmDelete) {
@@ -185,99 +160,26 @@ const Columns = function Columns({
       });
     }
   };
-
-  // ________________________________________________________________________________
-
-  const handleDragStartCardTest = (e, card, columnIndex, cardIndex) => {
-    setDragPayload({ card, columnIndex, cardIndex });
-    setIsDropCard(true);
-    let cardEl = e.target;
-    if (cardEl.matches(".card")) {
-      let cardPreview = cardEl.cloneNode(true);
-      cardPreview.classList.add("card-preview");
-      document.body.appendChild(cardPreview);
-      cardEl.classList.add("card-ghost");
-      let div = document.createElement("div");
-      e.dataTransfer.setDragImage(div, 0, 0);
-    }
-  };
-
-  const handleCardOverTest = (e, cardIndex, columnIndex) => {
-    cardDragOver.current = cardIndex;
-    if (isDropCard) {
-      const cardPreview = document.querySelector(".card-preview");
-      function moveAt(pageX, pageY) {
-        cardPreview.style.left = pageX - cardPreview.offsetWidth / 2 + "px";
-        cardPreview.style.top = pageY - 20 + "px";
-      }
-      function onMouseMove(e) {
-        moveAt(e.pageX, e.pageY);
-      }
-      document.addEventListener("drag", onMouseMove);
-    }
-  };
-
-  const handleDropCardTest = (e, dropIndex) => {
-    const { card, columnIndex, cardIndex } = dragPayload;
-
-    const eleBelow = document.elementFromPoint(e.clientX, e.clientY);
-    const indexColumnDrop = Number(eleBelow.dataset.indexcolumn);
-
-    const cardPreview = document.querySelector(".card-preview");
-    const cardGhost = document.querySelector(".card-ghost");
-    if (cardPreview && cardGhost) {
-      cardGhost.classList.remove("card-ghost");
-      cardPreview.remove();
-      e.preventDefault();
-    }
-
-    if (isDropCard) {
-      if (indexColumnDrop) {
-        if (dragPayload) {
-          if (indexColumnDrop !== columnIndex) {
-            // const newColumns = [...columns];
-            // newColumns[columnIndex].cards.splice(cardIndex, 1);
-            // newColumns[dropColumnIndex].cards.splice(
-            //   cardDragOver.current + 1,
-            //   0,
-            //   card
-            // );
-            // setColumns(newColumns);
-            console.log("Khác column");
-          } else {
-            console.log("cùng column");
-
-            if (cardDragOver.current !== cardIndex) {
-              const newCards = [...cards];
-
-              let relatedCard = newCards[cardDragOver.current];
-              newCards.splice(cardIndex, 1, relatedCard);
-              newCards.splice(cardDragOver.current, 1, card);
-              setCards(newCards);
-            } else {
-              console.log("không thay đổi");
-            }
-          }
-        }
-      }
-    }
-    // setIsDropCard(false);
-  };
-
-  // Xử lý Drag n Drop Card
-
   return (
     <>
       <ColumnsStyled
         className="column"
+        data-idcolumn={column._id}
         onDragOver={(e) => e.preventDefault()}
-        // onDrop={(e) => handleDropCard(e, columnIndex)}
       >
         <ColumnHeadingStyled
           draggable="true"
-          onDragStart={onDragStart}
-          onDragEnter={onDragEnter}
-          onDragEnd={onDragEnd}
+          onDragStart={(e) => {
+            setIsDropColumn(true);
+            return onDragStart(e, columnIndex);
+          }}
+          onDragEnter={(e) => {
+            return onDragEnter(e, columnIndex);
+          }}
+          onDragEnd={(e) => {
+            if (isDropColumn) return onDragEnd(e);
+            setIsDropColumn(false);
+          }}
           data-indexcolumn={columnIndex}
         >
           <TitleEditable
@@ -285,35 +187,35 @@ const Columns = function Columns({
             handleSaveTitleChange={handleSaveTitleChange}
             titleRef={titleRef}
             data-indexcolumn={columnIndex}
+            data-idcolumn={column._id}
             columnIndex={columnIndex}
+            columnId={column._id}
           />
           <MoreBtn
-            columnId={column._id} // column
+            columnId={column._id}
             handleDeleteColumn={handleDeleteColumn}
             columnIndex={columnIndex}
           />
         </ColumnHeadingStyled>
-        <div className="list-task" data-indexcolumn={columnIndex}>
+
+        <div
+          className="list-task"
+          data-indexcolumn={columnIndex}
+          data-idcolumn={column._id}
+        >
           {cards.map((card, index) => (
             <Card
               title={card.title}
               key={index}
               card={card}
-              columnId={column._id} // column
+              columnId={column._id}
               columnIndex={columnIndex}
               cardIndex={index}
-              handleMouseUpCard={handleMouseUpCard}
-              testDragEnd={testDragEnd}
-              // onCardDragStart={onCardDragStart}
-              // handleDragEndCard={handleDragEndCard}
-              // handleCardOver={handleCardOver}
-              // handleDropCard={handleDropCard}
-              handleDragStartCardTest={handleDragStartCardTest}
-              handleCardOverTest={handleCardOverTest}
-              handleDropCardTest={handleDropCardTest}
+              onCardDragStart={onCardDragStart}
+              handleDragEndCard={handleDragEndCard}
+              handleCardOver={handleCardOver}
             />
           ))}
-
           {displayAddCard && (
             <AddCardField
               handleClose={handleClose}
@@ -321,12 +223,11 @@ const Columns = function Columns({
               cardTitle={cardTitle}
               handleAddCard={handleAddCard}
               cardRefInput={cardRefInput}
-              columnId={column._id} // column
+              columnId={column._id}
               columnIndex={columnIndex}
             />
           )}
         </div>
-
         {displayAddCard || (
           <ColumnFooterStyled onClick={handleToggleDisplay}>
             <div
@@ -342,6 +243,5 @@ const Columns = function Columns({
       </ColumnsStyled>
     </>
   );
-};
-
+});
 export default Columns;

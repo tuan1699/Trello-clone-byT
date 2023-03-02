@@ -25,6 +25,7 @@ const TitleEditable = ({
   handleSaveTitleChange,
   titleRef,
   columnIndex,
+  columnId,
 }) => {
   const handleSelectAllTitle = () => {
     titleRef.current.focus();
@@ -54,6 +55,7 @@ const TitleEditable = ({
         onChange={handleChangeTitle}
         onBlur={() => handleSaveTitleChange(titleColumn)}
         data-indexcolumn={columnIndex}
+        data-idcolumn={columnId}
       />
     </TitleEditableStyled>
   );

@@ -147,51 +147,49 @@ const Board = () => {
     document.addEventListener("drag", onMouseMove);
   };
 
-  const drop = useCallback(
-    (e) => {
-      const copyColums = [...columns];
-      const copyBoard = { ...board };
-      const dragColumn = copyColums[dragItem.current];
-      const dragOverColumn = copyColums[dragOverItem.current];
-      if (dragOverColumn && dragColumn && dragColumn !== dragOverColumn) {
-        if (
-          (dragItem.current === 0 &&
-            dragOverItem.current === copyBoard.columnOrder.length - 1) ||
-          (dragItem.current === copyBoard.columnOrder.length - 1 &&
-            dragOverItem.current === 0)
-        ) {
-          copyBoard.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
-          copyBoard.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
-        } else {
-          copyBoard.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
-          copyBoard.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
-        }
-        copyColums.sort((a, b) => {
-          return (
-            copyBoard.columnOrder.indexOf(a._id) -
-            copyBoard.columnOrder.indexOf(b._id)
-          );
-        });
-        setColumns(copyColums);
-        copyBoard.columnOrder = copyColums.map((column) => column._id);
-        setBoard(copyBoard);
-        updateBoard(copyBoard._id, copyBoard).catch((error) => {
-          console.log(error);
-          setColumns(columns);
-          setBoard(board);
-        });
+  const drop = (e) => {
+    const copyColums = [...columns];
+    const copyBoard = { ...board };
+    const dragColumn = copyColums[dragItem.current];
+    const dragOverColumn = copyColums[dragOverItem.current];
+    if (dragOverColumn && dragColumn && dragColumn !== dragOverColumn) {
+      if (
+        (dragItem.current === 0 &&
+          dragOverItem.current === copyBoard.columnOrder.length - 1) ||
+        (dragItem.current === copyBoard.columnOrder.length - 1 &&
+          dragOverItem.current === 0)
+      ) {
+        copyBoard.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
+        copyBoard.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
+      } else {
+        copyBoard.columnOrder.splice(dragItem.current, 1, dragOverColumn._id);
+        copyBoard.columnOrder.splice(dragOverItem.current, 1, dragColumn._id);
       }
-      dragItem.current = null;
-      dragOverItem.current = null;
-      const cardPreview = document.querySelector(".card-preview");
-      const shadow = document.querySelector(".shadow");
-      shadow.classList.remove("shadow");
-      if (cardPreview) {
-        cardPreview.remove();
-      }
-    },
-    [board, columns]
-  );
+      copyColums.sort((a, b) => {
+        return (
+          copyBoard.columnOrder.indexOf(a._id) -
+          copyBoard.columnOrder.indexOf(b._id)
+        );
+      });
+      setColumns(copyColums);
+      copyBoard.columnOrder = copyColums.map((column) => column._id);
+      setBoard(copyBoard);
+      console.log("check");
+      updateBoard(copyBoard._id, copyBoard).catch((error) => {
+        console.log(error);
+        setColumns(columns);
+        setBoard(board);
+      });
+    }
+    dragItem.current = null;
+    dragOverItem.current = null;
+    const cardPreview = document.querySelector(".card-preview");
+    const shadow = document.querySelector(".shadow");
+    shadow.classList.remove("shadow");
+    if (cardPreview) {
+      cardPreview.remove();
+    }
+  };
 
   const handleDragOver = (e) => {
     e.preventDefault();

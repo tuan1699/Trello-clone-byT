@@ -50,8 +50,12 @@ const TitleEditable = ({
         value={titleColumn}
         className="title-editable"
         onDoubleClick={handleSelectAllTitle}
+        onClick={(e) => {
+          e.preventDefault();
+          titleRef.current.blur();
+        }}
+        draggable={true}
         ref={titleRef}
-        draggable="true"
         onChange={handleChangeTitle}
         onBlur={() => handleSaveTitleChange(titleColumn)}
         data-indexcolumn={columnIndex}

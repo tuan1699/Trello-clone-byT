@@ -58,8 +58,6 @@ const Board = () => {
   const [cards, setCards] = useState([]);
   const [newTitle, setNewTitle] = useState("");
   const addTitleRef = useRef(null);
-  // const [impactedColumn, setImpactedColumn] = useState(null);
-  // Drop n Drag Column
   const dragItem = useRef();
   const dragOverItem = useRef();
   const cardDragOver = useRef(null);

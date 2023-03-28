@@ -5,6 +5,10 @@ import TitleEditable from "./TitleEditable";
 import MoreBtn from "./MoreBtn";
 import AddCardField from "./AddCardField";
 import { updateTitle, createNewCard, deleteColumn } from "../actions/callApi";
+import { Controller } from "./Controller";
+import Select from "./Select";
+import Tooltip from "./Tooltip";
+import ToggleTooltip from "./ToggleTooltip";
 
 const ColumnsStyled = styled.div`
   flex: 0 0 auto;
@@ -65,6 +69,25 @@ const ColumnFooterStyled = styled.div`
       background: #dadbe2;
       transition: all ease 0.2s;
     }
+  }
+`;
+
+const MoreBtnStyled = styled.div`
+  position: relative;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+  border-radius: 3px;
+
+  .more-btn {
+    width: 32px;
+    height: 32px;
+    color: #6b778c;
+  }
+
+  &:hover {
+    background: #dadbe2;
+    cursor: pointer;
   }
 `;
 const Columns = memo(function Columns({
@@ -195,6 +218,20 @@ const Columns = memo(function Columns({
             columnIndex={columnIndex}
             columnId={column._id}
           />
+          {/* <Controller>
+            <Select>
+              <MoreBtnStyled>
+                <div
+                  className="more-btn"
+                  data-columnid={column._id}
+                  data-indexcolumn={columnIndex}
+                >
+                  ...
+                </div>
+              </MoreBtnStyled>
+            </Select>
+            <Tooltip />
+          </Controller> */}
           <MoreBtn
             columnId={column._id}
             handleDeleteColumn={handleDeleteColumn}

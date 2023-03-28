@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const MoreBtnStyled = styled.div`
@@ -51,15 +51,16 @@ const ListActionStyled = styled.div`
 const MoreBtn = ({ columnId, handleDeleteColumn, columnIndex }) => {
   const [displayAction, setDisplayAction] = useState(false);
 
-  const handleDisplayAction = (e) => {
-    console.log("test");
-    setDisplayAction(!displayAction);
-    console.log(displayAction);
+  const handleDisplayAction = (columnId) => {
+    console.log(columnId);
+    setDisplayAction(true);
     window.addEventListener("click", (e) => {
       if (
         e.target.dataset.columnid !== columnId &&
         !e.target.matches(".action-item")
       ) {
+        console.log(e.target.dataset.columnid);
+        console.log(columnId);
         setDisplayAction(false);
       }
     });
@@ -77,7 +78,7 @@ const MoreBtn = ({ columnId, handleDeleteColumn, columnIndex }) => {
     <MoreBtnStyled>
       <div
         className="more-btn"
-        onClick={handleDisplayAction}
+        onClick={() => handleDisplayAction(columnId)}
         data-columnid={columnId}
         data-indexcolumn={columnIndex}
       >

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 
 const Select = (props) => {
   const {
@@ -10,29 +10,27 @@ const Select = (props) => {
   } = props;
 
   const moreBtnRef = useRef(null);
+  const board = document.querySelector("#board");
 
   useEffect(() => {
-    const { left, top, height } = moreBtnRef.current.getBoundingClientRect();
-    getPos(left, top, height);
-  }, []);
-
-  const toggleTooltip = () => {
-    const testEl = document.body.querySelectorAll(".test-btn");
-    if (testEl) {
-      testEl.forEach((item) => item.remove());
-    }
-    window.addEventListener("click", (e) => {
-      if (e.target.className === "more-btn") {
-        if (isOpen) {
-          console.log("check");
-          handleCloseMoreBtn();
-        } else {
-          handleOpenMorebtn();
-        }
-      } else {
-        handleCloseMoreBtn();
+    board.addEventListener("scroll", () => {
+      if (moreBtnRef && moreBtnRef.current) {
+        const {
+          left,
+          top,
+          height,
+        } = moreBtnRef.current.getBoundingClientRect();
+        getPos(left, top, height);
       }
     });
+  }, [isOpen]);
+
+  const toggleTooltip = () => {
+    if (isOpen) {
+      handleCloseMoreBtn();
+    } else {
+      handleOpenMorebtn();
+    }
   };
 
   return React.cloneElement(children, {

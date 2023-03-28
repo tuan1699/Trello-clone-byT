@@ -218,7 +218,7 @@ const Columns = memo(function Columns({
             columnIndex={columnIndex}
             columnId={column._id}
           />
-          {/* <Controller>
+          <Controller>
             <Select>
               <MoreBtnStyled>
                 <div
@@ -230,13 +230,8 @@ const Columns = memo(function Columns({
                 </div>
               </MoreBtnStyled>
             </Select>
-            <Tooltip />
-          </Controller> */}
-          <MoreBtn
-            columnId={column._id}
-            handleDeleteColumn={handleDeleteColumn}
-            columnIndex={columnIndex}
-          />
+            <Tooltip handleDeleteColumn={handleDeleteColumn} />
+          </Controller>
         </ColumnHeadingStyled>
 
         <div

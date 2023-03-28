@@ -24,16 +24,25 @@ const ListActionStyled = styled.div`
 
   .action-item:hover {
     background: #ebecf0;
+    cursor: pointer;
   }
 `;
 
-const Tooltip = () => {
+const Tooltip = ({ handleDeleteColumn, handleCloseMoreBtn }) => {
   return (
     <ListActionStyled>
       <p className="action-heading">List actions</p>
       <p className="action-item">Add card...</p>
       <p className="action-item">Copy list...</p>
-      <p className="action-item">Remove list...</p>
+      <p
+        className="action-item"
+        onClick={() => {
+          handleDeleteColumn();
+          handleCloseMoreBtn();
+        }}
+      >
+        Remove list...
+      </p>
       <p className="action-item">Watch</p>
     </ListActionStyled>
   );

@@ -1,4 +1,4 @@
-import React, { Children, useEffect, useState } from "react";
+import React, { Children, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
 export const Controller = (props) => {
@@ -13,23 +13,28 @@ export const Controller = (props) => {
     class: "check",
   });
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     if (statusMoreBtn.isOpen) {
-  //       console.log("check");
-  //       window.addEventListener("click", handleCloseMoreBtn);
-  //     } else {
-  //       console.log("check");
-  //       window.removeEventListener("click", handleCloseMoreBtn);
-  //     }
-  //   }, 0);
-  // }, [statusMoreBtn.isOpen]);
+  useEffect(() => {
+    setTimeout(() => {
+      if (statusMoreBtn.isOpen) {
+        window.addEventListener("click", handleCloseMoreBtn);
+      } else {
+        window.removeEventListener("click", handleCloseMoreBtn);
+      }
+    }, 0);
+
+    return () => {
+      window.removeEventListener("click", handleCloseMoreBtn);
+    };
+  }, [statusMoreBtn.isOpen]);
+
+  const nodeRef = useRef(null);
 
   const handleOpenMorebtn = () => {
     setStatusMoreBtn({ ...statusMoreBtn, isOpen: true });
   };
 
   const handleCloseMoreBtn = () => {
+    console.log("close button");
     setStatusMoreBtn({ ...statusMoreBtn, isOpen: false });
   };
 
@@ -60,9 +65,11 @@ export const Controller = (props) => {
           <div
             onClick={(e) => e.stopPropagation()}
             style={statusMoreBtn.style}
-            className="test-btn"
+            ref={nodeRef}
           >
-            {React.cloneElement(child)}
+            {React.cloneElement(child, {
+              handleCloseMoreBtn: handleCloseMoreBtn,
+            })}
           </div>,
           document.body
         )

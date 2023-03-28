@@ -33,6 +33,7 @@ const TitleEditable = ({
   };
 
   const [titleColumn, setTitleColumn] = useState("");
+  const [isFocusTitle, setIsFocusTitle] = useState(false);
 
   useEffect(() => {
     setTitleColumn(title);
@@ -44,16 +45,28 @@ const TitleEditable = ({
   };
 
   return (
-    <TitleEditableStyled>
+    <TitleEditableStyled
+      onDoubleClick={() => {
+        setIsFocusTitle(true);
+        titleRef.current.focus();
+        titleRef.current.select();
+      }}
+    >
       <input
+        disabled={isFocusTitle ? false : true}
         type="text"
         value={titleColumn}
         className="title-editable"
-        onDoubleClick={handleSelectAllTitle}
+        onDoubleClick={() => {
+          setIsFocusTitle(true);
+          handleSelectAllTitle();
+        }}
         ref={titleRef}
-        draggable="true"
         onChange={handleChangeTitle}
-        onBlur={() => handleSaveTitleChange(titleColumn)}
+        onBlur={() => {
+          setIsFocusTitle(false);
+          handleSaveTitleChange(titleColumn);
+        }}
         data-indexcolumn={columnIndex}
         data-idcolumn={columnId}
       />

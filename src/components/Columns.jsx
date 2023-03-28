@@ -5,6 +5,10 @@ import TitleEditable from "./TitleEditable";
 import MoreBtn from "./MoreBtn";
 import AddCardField from "./AddCardField";
 import { updateTitle, createNewCard, deleteColumn } from "../actions/callApi";
+import { Controller } from "./Controller";
+import Select from "./Select";
+import Tooltip from "./Tooltip";
+import ToggleTooltip from "./ToggleTooltip";
 
 const ColumnsStyled = styled.div`
   flex: 0 0 auto;
@@ -16,6 +20,7 @@ const ColumnsStyled = styled.div`
   margin-right: 5px;
   margin-left: 5px;
   .list-task {
+    min-height: 70px;
     max-height: 550px;
     overflow-y: scroll;
     ::-webkit-scrollbar {
@@ -66,6 +71,25 @@ const ColumnFooterStyled = styled.div`
     }
   }
 `;
+
+const MoreBtnStyled = styled.div`
+  position: relative;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+  border-radius: 3px;
+
+  .more-btn {
+    width: 32px;
+    height: 32px;
+    color: #6b778c;
+  }
+
+  &:hover {
+    background: #dadbe2;
+    cursor: pointer;
+  }
+`;
 const Columns = memo(function Columns({
   column,
   onDragStart,
@@ -80,18 +104,15 @@ const Columns = memo(function Columns({
 }) {
   const [cards, setCards] = useState([]);
   const [isDropColumn, setIsDropColumn] = useState(false);
-  // STATE update title
   const titleRef = useRef(null);
   const [title, setTitle] = useState("");
-  // STATE focus input card
   const cardRefInput = useRef(null);
-  // STATE display
   const [displayAddCard, setDisplayAddCard] = useState(false);
-  // STATE add card
   const [cardTitle, setCardTitle] = useState("");
   const handleInputCard = (e) => {
     setCardTitle(e.target.value);
   };
+
   useEffect(() => {
     if (column) {
       column.cards.sort((a, b) => {
@@ -101,12 +122,13 @@ const Columns = memo(function Columns({
       setTitle(column.title);
     }
   }, [column]);
+
   // Add Card
   const handleAddCard = (newCardTitle) => {
     if (newCardTitle !== "") {
       const newCardToAdd = {
         boardId: boardId,
-        columnId: column._id, // column
+        columnId: column._id,
         title: newCardTitle.trim(),
       };
       createNewCard(newCardToAdd)
@@ -124,6 +146,7 @@ const Columns = memo(function Columns({
       cardRefInput.current.focus();
     }
   };
+
   const handleSaveTitleChange = (newTitle) => {
     if (newTitle.trim() === "") {
     } else if (newTitle.trim() === column.title.trim()) {
@@ -136,6 +159,7 @@ const Columns = memo(function Columns({
       updateTitle(column._id, newColumn);
     }
   };
+
   const handleToggleDisplay = () => {
     setDisplayAddCard(!displayAddCard);
     window.addEventListener("click", (e) => {
@@ -149,7 +173,9 @@ const Columns = memo(function Columns({
       }
     });
   };
+
   const handleClose = () => setDisplayAddCard(false);
+
   const handleDeleteColumn = () => {
     const confirmDelete = window.confirm("Do you want delete entire columns?");
     if (confirmDelete) {
@@ -160,6 +186,7 @@ const Columns = memo(function Columns({
       });
     }
   };
+
   return (
     <>
       <ColumnsStyled
@@ -191,11 +218,20 @@ const Columns = memo(function Columns({
             columnIndex={columnIndex}
             columnId={column._id}
           />
-          <MoreBtn
-            columnId={column._id}
-            handleDeleteColumn={handleDeleteColumn}
-            columnIndex={columnIndex}
-          />
+          <Controller>
+            <Select>
+              <MoreBtnStyled>
+                <div
+                  className="more-btn"
+                  data-columnid={column._id}
+                  data-indexcolumn={columnIndex}
+                >
+                  ...
+                </div>
+              </MoreBtnStyled>
+            </Select>
+            <Tooltip handleDeleteColumn={handleDeleteColumn} />
+          </Controller>
         </ColumnHeadingStyled>
 
         <div
@@ -216,6 +252,7 @@ const Columns = memo(function Columns({
               handleCardOver={handleCardOver}
             />
           ))}
+
           {displayAddCard && (
             <AddCardField
               handleClose={handleClose}
